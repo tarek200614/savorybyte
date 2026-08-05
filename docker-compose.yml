@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: savorybyte_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-savory_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-savory_password}
+      POSTGRES_DB: ${POSTGRES_DB:-savorybyte_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-savory_user} -d ${POSTGRES_DB:-savorybyte_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: savorybyte_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-savory_user}:${POSTGRES_PASSWORD:-savory_password}@postgres:5432/${POSTGRES_DB:-savorybyte_db}
+      - SECRET_KEY=${SECRET_KEY:-super_secret_jwt_key_change_in_production_123456789}
+      - ENVIRONMENT=development
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: savorybyte_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
