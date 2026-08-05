@@ -1,5 +1,3 @@
-from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,7 +14,7 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://savory_user:savory_password@localhost:5432/savorybyte_db"
     )
 
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://localhost:3000",
     ]

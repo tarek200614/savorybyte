@@ -27,6 +27,7 @@ ignore = ["B008"] # Do not perform function calls in argument defaults (FastAPI 
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --asyncio-mode=auto"
+pythonpath = ["."]
 testpaths = [
     "app/tests",
 ]
