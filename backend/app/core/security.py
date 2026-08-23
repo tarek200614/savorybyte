@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 import bcrypt
 from jose import JWTError, jwt
+
 from app.core.config import settings
 from app.schemas.user import TokenPayload
 
@@ -25,16 +27,12 @@ def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 
 
-def create_access_token(
-    subject: Any, role: str, expires_delta: Optional[timedelta] = None
-) -> str:
+def create_access_token(subject: Any, role: str, expires_delta: timedelta | None = None) -> str:
     """Generate a short-lived JWT access token containing subject (user_id) and role."""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {
         "exp": expire,
@@ -45,16 +43,12 @@ def create_access_token(
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(
-    subject: Any, role: str, expires_delta: Optional[timedelta] = None
-) -> str:
+def create_refresh_token(subject: Any, role: str, expires_delta: timedelta | None = None) -> str:
     """Generate a long-lived JWT refresh token."""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
-        )
+        expire = datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     to_encode = {
         "exp": expire,
