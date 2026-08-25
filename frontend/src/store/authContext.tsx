@@ -1,7 +1,17 @@
-import { useEffect, useState, ReactNode } from 'react';
+import { createContext, useEffect, useState, ReactNode } from 'react';
 import { User } from '@/types';
 import { apiRequest } from '@/services/api';
-import { AuthContext } from './AuthContext';
+
+/* eslint-disable react-refresh/only-export-components */
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (token: string, user: User) => void;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
