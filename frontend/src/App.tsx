@@ -2,13 +2,26 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/store/authContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+
+// Public Pages
 import { Login } from '@/pages/public/Login';
 import { Register } from '@/pages/public/Register';
+
+// Customer Pages
 import { BookTable } from '@/pages/customer/BookTable';
 import { DigitalMenu } from '@/pages/customer/DigitalMenu';
 import { MyReservations } from '@/pages/customer/MyReservations';
 import { MyOrders } from '@/pages/customer/MyOrders';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+
+// Staff Pages
+import { StaffDashboard } from '@/pages/staff/StaffDashboard';
+import { KitchenDisplay } from '@/pages/staff/KitchenDisplay';
+
+// Admin Pages
+import { AdminDashboard } from '@/pages/admin/AdminDashboard';
+import { ManageTables } from '@/pages/admin/ManageTables';
+import { ManageMenu } from '@/pages/admin/ManageMenu';
 
 export default function App() {
   return (
@@ -47,6 +60,50 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'ADMIN']}>
                     <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Staff Protected Routes */}
+              <Route
+                path="/staff/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}>
+                    <StaffDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/staff/kitchen"
+                element={
+                  <ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}>
+                    <KitchenDisplay />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Protected Routes */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tables"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <ManageTables />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/menu"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <ManageMenu />
                   </ProtectedRoute>
                 }
               />
