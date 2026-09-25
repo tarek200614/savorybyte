@@ -1,10 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/store/authContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Public Pages
+import { Home } from '@/pages/public/Home';
 import { Login } from '@/pages/public/Login';
 import { Register } from '@/pages/public/Register';
 
@@ -27,13 +28,13 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200 font-sans">
           <Navbar />
 
           <main className="flex-1">
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<Navigate to="/menu" replace />} />
+              <Route path="/" element={<Home />} />
               <Route path="/menu" element={<DigitalMenu />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

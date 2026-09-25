@@ -40,6 +40,11 @@ async def get_my_orders(
 
 
 @router.get(
+    "",
+    response_model=list[OrderOut],
+    dependencies=[Depends(require_role([UserRole.STAFF, UserRole.ADMIN]))],
+)
+@router.get(
     "/live",
     response_model=list[OrderOut],
     dependencies=[Depends(require_role([UserRole.STAFF, UserRole.ADMIN]))],
@@ -49,12 +54,17 @@ async def get_live_kitchen_orders(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Fetch active order queue for Staff Kitchen Display System (KDS).
+    Fetch active order queue for Staff Kitchen Display System (KDS) & Admin.
     Protected: STAFF & ADMIN only.
     """
     return await order_crud.get_multi(db, status=status)
 
 
+@router.patch(
+    "/{order_id}",
+    response_model=OrderOut,
+    dependencies=[Depends(require_role([UserRole.STAFF, UserRole.ADMIN]))],
+)
 @router.patch(
     "/{order_id}/status",
     response_model=OrderOut,

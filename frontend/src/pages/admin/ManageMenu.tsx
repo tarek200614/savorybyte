@@ -25,6 +25,7 @@ const menuItemSchema = z.object({
   name: z.string().min(2, 'Item name is required'),
   description: z.string().optional(),
   price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
+  image_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   category_id: z.string().uuid('Select a category'),
   preparation_time_mins: z.coerce.number().min(1),
   is_vegetarian: z.boolean(),
@@ -73,6 +74,7 @@ export function ManageMenu() {
   const itemForm = useForm<MenuItemFormValues>({
     resolver: zodResolver(menuItemSchema),
     defaultValues: {
+      image_url: '',
       preparation_time_mins: 15,
       is_vegetarian: false,
       is_gluten_free: false,
@@ -83,7 +85,10 @@ export function ManageMenu() {
     mutationFn: (data: MenuItemFormValues) =>
       apiRequest<MenuItem>('/menu/items', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          image_url: data.image_url || null,
+        }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-menu-items'] });
@@ -107,10 +112,10 @@ export function ManageMenu() {
         <div>
           <h1 className="text-3xl font-extrabold text-slate-100 flex items-center space-x-3">
             <Utensils className="w-8 h-8 text-amber-400" />
-            <span>Menu Management</span>
+            <span>Menu & Halal Gastronomy Management</span>
           </h1>
           <p className="text-sm text-slate-400 font-light mt-1">
-            Create categories, add dishes, and manage pricing
+            Create categories, publish dishes, and manage dietary specifications
           </p>
         </div>
 
@@ -127,7 +132,7 @@ export function ManageMenu() {
       {/* Categories Overview */}
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-          Categories ({categories?.length || 0})
+          Active Categories ({categories?.length || 0})
         </h2>
         <div className="flex flex-wrap gap-2">
           {categories?.map((cat) => (
@@ -159,40 +164,52 @@ export function ManageMenu() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {menuItems.map((item) => (
-            <Card key={item.id}>
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-100">{item.name}</h3>
-                    <p className="text-xs text-slate-400 font-light mt-1">
-                      {item.description || 'No description'}
-                    </p>
+            <Card key={item.id} className="overflow-hidden flex flex-col justify-between">
+              {item.image_url && (
+                <div className="relative h-36 overflow-hidden bg-slate-950">
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                </div>
+              )}
+
+              <CardContent className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-bold text-base text-slate-100">{item.name}</h3>
+                    <span className="text-base font-extrabold text-amber-400 font-mono">
+                      ${Number(item.price).toFixed(2)}
+                    </span>
                   </div>
-                  <span className="text-lg font-extrabold text-amber-400 font-mono">
-                    ${Number(item.price).toFixed(2)}
-                  </span>
+                  <p className="text-xs text-slate-400 font-light line-clamp-2">
+                    {item.description || 'No description provided.'}
+                  </p>
                 </div>
 
-                <div className="flex items-center flex-wrap gap-2">
+                <div className="flex items-center flex-wrap gap-1.5 pt-2">
                   {item.category && (
-                    <Badge variant="blue">{item.category.name}</Badge>
+                    <Badge variant="blue" className="text-[10px]">{item.category.name}</Badge>
                   )}
                   {item.is_vegetarian && (
-                    <Badge variant="emerald" className="gap-1">
+                    <Badge variant="emerald" className="gap-1 text-[10px]">
                       <Leaf className="w-3 h-3" /> Veg
                     </Badge>
                   )}
-                  {item.is_gluten_free && <Badge variant="purple">GF</Badge>}
-                  <Badge variant="slate">{item.preparation_time_mins} mins</Badge>
+                  {item.is_gluten_free && <Badge variant="purple" className="text-[10px]">GF</Badge>}
+                  <Badge variant="slate" className="text-[10px]">{item.preparation_time_mins} mins</Badge>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/80">
+                <div className="pt-3 border-t border-slate-800/80">
                   <Button
                     variant="danger"
                     size="sm"
-                    className="w-full"
+                    className="w-full text-xs font-semibold"
                     loading={deleteItemMutation.isPending}
                     onClick={() => {
                       if (window.confirm(`Delete "${item.name}"?`)) {
@@ -200,7 +217,7 @@ export function ManageMenu() {
                       }
                     }}
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Remove Item
+                    <Trash2 className="w-3.5 h-3.5" /> Remove Dish
                   </Button>
                 </div>
               </CardContent>
@@ -221,7 +238,7 @@ export function ManageMenu() {
         >
           <Input
             label="Category Name"
-            placeholder="Appetizers, Main Courses, Desserts..."
+            placeholder="Artisanal Mezze, Prime Halal Cuts, Botanical Mocktails..."
             error={catForm.formState.errors.name?.message}
             {...catForm.register('name')}
           />
@@ -265,7 +282,7 @@ export function ManageMenu() {
       <Modal
         isOpen={showItemModal}
         onClose={() => setShowItemModal(false)}
-        title="Add New Menu Item"
+        title="Add New Gourmet Dish"
       >
         <form
           onSubmit={itemForm.handleSubmit((data: MenuItemFormValues) => createItemMutation.mutate(data))}
@@ -273,15 +290,22 @@ export function ManageMenu() {
         >
           <Input
             label="Dish Name"
-            placeholder="Truffle Risotto, Caesar Salad..."
+            placeholder="Halal A5 Japanese Wagyu Ribeye..."
             error={itemForm.formState.errors.name?.message}
             {...itemForm.register('name')}
           />
 
           <Input
-            label="Description (Optional)"
-            placeholder="Rich and creamy truffle-infused..."
+            label="Description"
+            placeholder="Detailed ingredients and culinary preparation notes..."
             {...itemForm.register('description')}
+          />
+
+          <Input
+            label="Image URL (Unsplash or CDN link)"
+            placeholder="https://images.unsplash.com/photo-..."
+            error={itemForm.formState.errors.image_url?.message}
+            {...itemForm.register('image_url')}
           />
 
           <div className="grid grid-cols-2 gap-4">
@@ -360,7 +384,7 @@ export function ManageMenu() {
               className="flex-1"
               loading={createItemMutation.isPending}
             >
-              Add to Menu
+              Publish to Menu
             </Button>
           </div>
         </form>
