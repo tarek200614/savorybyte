@@ -19,9 +19,11 @@ def main():
     assert len(items) == 18, f"Expected 18 items, got {len(items)}"
 
     image_urls = []
-    print("\n" + "="*120)
-    print(f"{'#':<3} | {'Dish Name':<35} | {'Category':<28} | {'Price':<8} | {'Dietary':<12} | {'Image URL'}")
-    print("="*120)
+    print("\n" + "=" * 120)
+    print(
+        f"{'#':<3} | {'Dish Name':<35} | {'Category':<28} | {'Price':<8} | {'Dietary':<12} | {'Image URL'}"
+    )
+    print("=" * 120)
 
     for idx, item in enumerate(items, 1):
         name = item["name"]
@@ -36,19 +38,26 @@ def main():
         img = item.get("image_url")
 
         assert img is not None, f"Dish '{name}' has NULL image_url!"
-        assert img.startswith("https://images.unsplash.com/"), f"Dish '{name}' has non-Unsplash URL: {img}"
+        assert img.startswith(
+            "https://images.unsplash.com/"
+        ), f"Dish '{name}' has non-Unsplash URL: {img}"
 
         image_urls.append(img)
         print(f"{idx:<3} | {name:<35} | {cat:<28} | {price:<8} | {diet_str:<12} | {img[:55]}...")
 
-    print("="*120)
+    print("=" * 120)
 
     # Check for duplicate image URLs
     unique_images = set(image_urls)
     print(f"\nTotal items: {len(items)} | Unique images: {len(unique_images)}")
-    assert len(unique_images) == 18, f"Found duplicate images! {len(unique_images)} unique out of {len(items)}"
+    assert (
+        len(unique_images) == 18
+    ), f"Found duplicate images! {len(unique_images)} unique out of {len(items)}"
 
-    print("\n[SUCCESS] 100% PASS: All 18 menu items have unique, valid, non-null photography directly from the database!")
+    print(
+        "\n[SUCCESS] 100% PASS: All 18 menu items have unique, valid, non-null photography directly from the database!"
+    )
+
 
 if __name__ == "__main__":
     main()

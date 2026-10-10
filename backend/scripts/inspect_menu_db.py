@@ -18,7 +18,10 @@ async def main():
         items = item_res.scalars().all()
         print(f"\n=== MENU ITEMS IN DB ({len(items)}) ===")
         for idx, i in enumerate(items, 1):
-            print(f"{idx}. [{i.id}] '{i.name}' | Price: ${i.price} | Cat: {i.category_id} | Image: {i.image_url}")
+            print(
+                f"{idx}. [{i.id}] '{i.name}' | Price: ${i.price} | Cat: {i.category_id} | Image: {i.image_url}"
+            )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

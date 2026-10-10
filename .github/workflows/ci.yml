@@ -26,16 +26,18 @@ jobs:
 
       - name: Code Quality Checks (Ruff, Black, isort)
         run: |
-          ruff check backend/
-          black --check backend/
-          isort --check-only backend/
+          cd backend
+          ruff check .
+          black --check .
+          isort --check-only .
 
       - name: Run Backend Unit Tests
         env:
           DATABASE_URL: postgresql+asyncpg://savory_user:savory_password@localhost:5432/savorybyte_test
           SECRET_KEY: ci_secret_key_test_environment_12345
         run: |
-          pytest backend/app/tests
+          cd backend
+          pytest
 
   frontend-checks:
     name: Frontend TypeCheck & Linting

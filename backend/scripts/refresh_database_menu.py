@@ -79,14 +79,62 @@ async def sync_database():
         existing_tables = table_res.scalars().all()
         if not existing_tables:
             tables = [
-                RestaurantTable(table_number="T-01", capacity=2, location=TableLocation.MAIN_HALL, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="T-02", capacity=4, location=TableLocation.MAIN_HALL, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="T-03", capacity=4, location=TableLocation.MAIN_HALL, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="TERR-01", capacity=2, location=TableLocation.TERRACE, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="TERR-02", capacity=4, location=TableLocation.TERRACE, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="MAJLIS-01", capacity=8, location=TableLocation.PRIVATE_ROOM, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="CHEF-TABLE", capacity=6, location=TableLocation.PRIVATE_ROOM, status=TableStatus.AVAILABLE, is_active=True),
-                RestaurantTable(table_number="LOUNGE-01", capacity=2, location=TableLocation.BAR, status=TableStatus.AVAILABLE, is_active=True),
+                RestaurantTable(
+                    table_number="T-01",
+                    capacity=2,
+                    location=TableLocation.MAIN_HALL,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="T-02",
+                    capacity=4,
+                    location=TableLocation.MAIN_HALL,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="T-03",
+                    capacity=4,
+                    location=TableLocation.MAIN_HALL,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="TERR-01",
+                    capacity=2,
+                    location=TableLocation.TERRACE,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="TERR-02",
+                    capacity=4,
+                    location=TableLocation.TERRACE,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="MAJLIS-01",
+                    capacity=8,
+                    location=TableLocation.PRIVATE_ROOM,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="CHEF-TABLE",
+                    capacity=6,
+                    location=TableLocation.PRIVATE_ROOM,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
+                RestaurantTable(
+                    table_number="LOUNGE-01",
+                    capacity=2,
+                    location=TableLocation.BAR,
+                    status=TableStatus.AVAILABLE,
+                    is_active=True,
+                ),
             ]
             db.add_all(tables)
             await db.flush()
@@ -196,7 +244,6 @@ async def sync_database():
                 is_gluten_free=True,
                 preparation_time_mins=20,
             ),
-
             # Category 2: Prime Cuts & Grill (4 dishes)
             MenuItem(
                 category_id=cat_grill.id,
@@ -246,7 +293,6 @@ async def sync_database():
                 is_gluten_free=False,
                 preparation_time_mins=22,
             ),
-
             # Category 3: Pristine Ocean Catch (2 dishes)
             MenuItem(
                 category_id=cat_seafood.id,
@@ -272,7 +318,6 @@ async def sync_database():
                 is_gluten_free=False,
                 preparation_time_mins=16,
             ),
-
             # Category 4: Artisanal Patisserie & Sweets (3 dishes)
             MenuItem(
                 category_id=cat_desserts.id,
@@ -310,7 +355,6 @@ async def sync_database():
                 is_gluten_free=False,
                 preparation_time_mins=10,
             ),
-
             # Category 5: Botanical Mocktails & Brews (4 drinks)
             MenuItem(
                 category_id=cat_beverages.id,
@@ -364,7 +408,10 @@ async def sync_database():
 
         db.add_all(items)
         await db.commit()
-        print(f"✅ Successfully seeded {len(items)} dishes across 5 categories with unique image URLs!")
+        print(
+            f"✅ Successfully seeded {len(items)} dishes across 5 categories with unique image URLs!"
+        )
+
 
 if __name__ == "__main__":
     asyncio.run(sync_database())

@@ -25,7 +25,9 @@ async def seed_data() -> None:
 
     async with AsyncSessionLocal() as db:
         # 1. Ensure Users
-        existing_admin = await db.execute(select(User).where(User.email == "meghariabderrhmanetarek@gmail.com"))
+        existing_admin = await db.execute(
+            select(User).where(User.email == "meghariabderrhmanetarek@gmail.com")
+        )
         admin_user = existing_admin.scalar_one_or_none()
         if not admin_user:
             print("👤 Creating user accounts (Admin, Staff, Customer)...")
@@ -57,7 +59,9 @@ async def seed_data() -> None:
             await db.flush()
         else:
             print("👤 Users already exist, proceeding to categories and menu verification...")
-            staff_res = await db.execute(select(User).where(User.email == "meghari.abderrahmane06@gmail.com"))
+            staff_res = await db.execute(
+                select(User).where(User.email == "meghari.abderrahmane06@gmail.com")
+            )
             staff_user = staff_res.scalar_one()
             cust_res = await db.execute(select(User).where(User.email == "customer@savorybyte.com"))
             customer_user = cust_res.scalar_one()
