@@ -1,5 +1,5 @@
-from decimal import Decimal
 import uuid
+
 import pytest
 from httpx import AsyncClient
 
@@ -7,9 +7,7 @@ from app.core.security import create_access_token
 from app.models.user import User
 
 
-async def create_test_category_and_item(
-    client: AsyncClient, admin_token: str
-) -> tuple[str, str]:
+async def create_test_category_and_item(client: AsyncClient, admin_token: str) -> tuple[str, str]:
     """Helper to create a real category and menu item via API with Admin token."""
     cat_name = f"Grill {uuid.uuid4().hex[:6]}"
     cat_res = await client.post(
@@ -46,9 +44,7 @@ async def create_test_category_and_item(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_update_product_name(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_admin_can_update_product_name(client: AsyncClient, test_user_admin: User):
     """1. ADMIN can update product name."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -66,9 +62,7 @@ async def test_admin_can_update_product_name(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_update_description(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_admin_can_update_description(client: AsyncClient, test_user_admin: User):
     """2. ADMIN can update description."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -84,9 +78,7 @@ async def test_admin_can_update_description(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_update_price(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_admin_can_update_price(client: AsyncClient, test_user_admin: User):
     """3. ADMIN can update price."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -102,9 +94,7 @@ async def test_admin_can_update_price(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_update_category(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_admin_can_update_category(client: AsyncClient, test_user_admin: User):
     """4. ADMIN can update category."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -166,9 +156,7 @@ async def test_staff_receives_403_on_update(
 
 
 @pytest.mark.asyncio
-async def test_unauthenticated_receives_401(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_unauthenticated_receives_401(client: AsyncClient, test_user_admin: User):
     """7. Unauthenticated request receives 401 Unauthorized."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -181,9 +169,7 @@ async def test_unauthenticated_receives_401(
 
 
 @pytest.mark.asyncio
-async def test_invalid_price_zero_rejected(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_invalid_price_zero_rejected(client: AsyncClient, test_user_admin: User):
     """8. Price of zero is rejected by validation."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -197,9 +183,7 @@ async def test_invalid_price_zero_rejected(
 
 
 @pytest.mark.asyncio
-async def test_negative_price_rejected(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_negative_price_rejected(client: AsyncClient, test_user_admin: User):
     """9. Negative price is rejected."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -213,9 +197,7 @@ async def test_negative_price_rejected(
 
 
 @pytest.mark.asyncio
-async def test_invalid_category_rejected(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_invalid_category_rejected(client: AsyncClient, test_user_admin: User):
     """10. Nonexistent category UUID is rejected with HTTP 400."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -231,9 +213,7 @@ async def test_invalid_category_rejected(
 
 
 @pytest.mark.asyncio
-async def test_empty_or_whitespace_name_rejected(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_empty_or_whitespace_name_rejected(client: AsyncClient, test_user_admin: User):
     """11. Empty or whitespace-only product name is rejected."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -254,9 +234,7 @@ async def test_empty_or_whitespace_name_rejected(
 
 
 @pytest.mark.asyncio
-async def test_excessively_long_description_rejected(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_excessively_long_description_rejected(client: AsyncClient, test_user_admin: User):
     """12. Excessively long description (>2000 chars) is rejected."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -271,9 +249,7 @@ async def test_excessively_long_description_rejected(
 
 
 @pytest.mark.asyncio
-async def test_xss_input_handled_as_safe_plain_text(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_xss_input_handled_as_safe_plain_text(client: AsyncClient, test_user_admin: User):
     """13. XSS-looking input remains safe text."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -289,9 +265,7 @@ async def test_xss_input_handled_as_safe_plain_text(
 
 
 @pytest.mark.asyncio
-async def test_sqli_metacharacters_handled_safely(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_sqli_metacharacters_handled_safely(client: AsyncClient, test_user_admin: User):
     """14. SQL-injection payload cannot manipulate SQL query."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -311,9 +285,7 @@ async def test_sqli_metacharacters_handled_safely(
 
 
 @pytest.mark.asyncio
-async def test_immutable_product_id(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_immutable_product_id(client: AsyncClient, test_user_admin: User):
     """15. Product ID cannot be changed via update payload."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -328,9 +300,7 @@ async def test_immutable_product_id(
 
 
 @pytest.mark.asyncio
-async def test_image_url_preserved_when_omitted(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_image_url_preserved_when_omitted(client: AsyncClient, test_user_admin: User):
     """16. Image URL is preserved when omitted from update payload."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)
@@ -341,7 +311,9 @@ async def test_image_url_preserved_when_omitted(
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code == 200
-    assert "https://images.unsplash.com/photo-1546069901-ba9599a7e63c" in response.json()["image_url"]
+    assert (
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c" in response.json()["image_url"]
+    )
 
 
 @pytest.mark.asyncio
@@ -401,9 +373,7 @@ async def test_price_change_preserves_past_orders_and_updates_new_orders(
 
 
 @pytest.mark.asyncio
-async def test_audit_event_logged_on_menu_update(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_audit_event_logged_on_menu_update(client: AsyncClient, test_user_admin: User):
     """19. Security audit event is created on product update."""
     admin_token = create_access_token(test_user_admin.id, test_user_admin.role)
     _, item_id = await create_test_category_and_item(client, admin_token)

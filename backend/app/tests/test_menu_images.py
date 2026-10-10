@@ -6,9 +6,7 @@ from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_all_menu_items_have_unique_valid_images(
-    client: AsyncClient, test_user_admin: User
-):
+async def test_all_menu_items_have_unique_valid_images(client: AsyncClient, test_user_admin: User):
     """
     Regression Test: Ensures that every menu item in the database
     has a non-null, valid, unique food/drink photograph.
@@ -71,13 +69,15 @@ async def test_all_menu_items_have_unique_valid_images(
 
         assert image_url is not None, f"Dish '{name}' has a NULL image_url"
         assert len(image_url.strip()) > 0, f"Dish '{name}' has an empty image_url string"
-        assert image_url.startswith("https://images.unsplash.com/"), f"Dish '{name}' has invalid image URL: {image_url}"
+        assert image_url.startswith(
+            "https://images.unsplash.com/"
+        ), f"Dish '{name}' has invalid image URL: {image_url}"
         assert item.get("category") is not None, f"Dish '{name}' has no category assigned"
 
         image_urls.append(image_url)
 
     # 4. Verify uniqueness
     unique_urls = set(image_urls)
-    assert len(unique_urls) == len(items), (
-        f"Found duplicate images across menu items! {len(unique_urls)} unique images for {len(items)} items."
-    )
+    assert len(unique_urls) == len(
+        items
+    ), f"Found duplicate images across menu items! {len(unique_urls)} unique images for {len(items)} items."

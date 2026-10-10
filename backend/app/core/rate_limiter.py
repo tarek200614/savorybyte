@@ -33,7 +33,9 @@ class SlidingWindowRateLimiter:
 
             if len(recent) >= max_requests:
                 oldest = recent[0]
-                retry_after = max(1, int((oldest + timedelta(seconds=window_seconds) - now).total_seconds()))
+                retry_after = max(
+                    1, int((oldest + timedelta(seconds=window_seconds) - now).total_seconds())
+                )
                 self._hits[key] = recent
                 return True, retry_after
 

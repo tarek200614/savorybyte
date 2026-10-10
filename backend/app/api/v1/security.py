@@ -424,7 +424,7 @@ async def run_security_test_suite(
     # 5. TEST: XSS Sanitization & Escaping
     if not test_id or test_id == "TEST-XSS-ESCAPE":
         t0 = time.perf_counter()
-        xss_payload = '<img src=x onerror="alert(\'XSS\')">'
+        xss_payload = "<img src=x onerror=\"alert('XSS')\">"
         # Verify that string is treated as plain text without executable interpretation
         is_safe = isinstance(xss_payload, str) and not xss_payload.startswith("javascript:")
         duration = (time.perf_counter() - t0) * 1000
@@ -451,7 +451,9 @@ async def run_security_test_suite(
         # Simulate burst exceeding limit of 3
         for _ in range(3):
             rate_limiter.is_rate_limited(rate_key, max_requests=3, window_seconds=60)
-        is_limited, retry_after = rate_limiter.is_rate_limited(rate_key, max_requests=3, window_seconds=60)
+        is_limited, retry_after = rate_limiter.is_rate_limited(
+            rate_key, max_requests=3, window_seconds=60
+        )
         duration = (time.perf_counter() - t0) * 1000
         rate_limiter.reset(rate_key)
 
@@ -507,7 +509,13 @@ async def run_security_test_suite(
             "Referrer-Policy": "strict-origin-when-cross-origin",
         }
         all_present = all(
-            k in ["Content-Security-Policy", "X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy"]
+            k
+            in [
+                "Content-Security-Policy",
+                "X-Content-Type-Options",
+                "X-Frame-Options",
+                "Referrer-Policy",
+            ]
             for k in headers
         )
         duration = (time.perf_counter() - t0) * 1000
@@ -748,7 +756,12 @@ async def get_security_architecture():
                     "No sensitive credentials in localStorage",
                     "Security Headers compliance (CSP, nosniff, DENY)",
                 ],
-                threats_addressed=["Stored XSS", "DOM Injection", "Clickjacking", "Client Clock Tampering"],
+                threats_addressed=[
+                    "Stored XSS",
+                    "DOM Injection",
+                    "Clickjacking",
+                    "Client Clock Tampering",
+                ],
             ),
             ArchitectureNode(
                 id="LAYER-02",
@@ -774,7 +787,12 @@ async def get_security_architecture():
                     "HMAC-SHA256 JWT cryptographic signature verification",
                     "HttpOnly SameSite=Lax refresh cookies",
                 ],
-                threats_addressed=["Brute-Force", "Credential Stuffing", "JWT Forgery", "Session Hijacking"],
+                threats_addressed=[
+                    "Brute-Force",
+                    "Credential Stuffing",
+                    "JWT Forgery",
+                    "Session Hijacking",
+                ],
             ),
             ArchitectureNode(
                 id="LAYER-04",
@@ -786,7 +804,11 @@ async def get_security_architecture():
                     "Horizontal IDOR user ownership query scoping",
                     "KDS state machine transition validation",
                 ],
-                threats_addressed=["Vertical Privilege Escalation", "Horizontal IDOR", "Broken Access Control"],
+                threats_addressed=[
+                    "Vertical Privilege Escalation",
+                    "Horizontal IDOR",
+                    "Broken Access Control",
+                ],
             ),
             ArchitectureNode(
                 id="LAYER-05",
@@ -818,4 +840,7 @@ async def reset_brute_force_lockouts(
     """
     brute_force_protector.reset_all()
     rate_limiter.reset()
-    return {"status": "success", "message": "All brute force lockouts and rate limit counters have been reset."}
+    return {
+        "status": "success",
+        "message": "All brute force lockouts and rate limit counters have been reset.",
+    }

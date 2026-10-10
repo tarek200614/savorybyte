@@ -127,7 +127,7 @@ export function ManageMenu() {
       catForm.reset();
       showTemporaryStatus('success', t.admin.createCategoryBtn);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       showTemporaryStatus('error', err?.message || 'Failed to create category');
     },
   });
@@ -149,7 +149,7 @@ export function ManageMenu() {
       createItemForm.reset();
       showTemporaryStatus('success', t.admin.productCreatedSuccess);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       showTemporaryStatus('error', err?.message || 'Failed to create product');
     },
   });
@@ -179,7 +179,7 @@ export function ManageMenu() {
       setEditingItem(null);
       showTemporaryStatus('success', t.admin.productUpdatedSuccess);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       showTemporaryStatus('error', err?.message || 'Failed to update product');
     },
   });
@@ -192,7 +192,7 @@ export function ManageMenu() {
       queryClient.invalidateQueries({ queryKey: ['menu-items'] });
       showTemporaryStatus('success', t.admin.productDeletedSuccess);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       showTemporaryStatus('error', err?.message || 'Failed to remove dish');
     },
   });

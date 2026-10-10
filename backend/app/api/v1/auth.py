@@ -38,7 +38,9 @@ async def register(
     request_id = getattr(request.state, "request_id", None)
 
     # 1. Rate Limiting check
-    is_limited, retry_after = rate_limiter.is_rate_limited(f"register:{client_ip}", max_requests=10, window_seconds=60)
+    is_limited, retry_after = rate_limiter.is_rate_limited(
+        f"register:{client_ip}", max_requests=10, window_seconds=60
+    )
     if is_limited:
         await security_crud.log_event(
             db,
@@ -138,7 +140,11 @@ async def login(
         # Record Failure in Brute Force Protector
         lockout_info = brute_force_protector.record_failure(username_clean, client_ip)
 
-        event_type = SecurityEventType.ACCOUNT_LOCKED if lockout_info.is_locked else SecurityEventType.LOGIN_FAILURE
+        event_type = (
+            SecurityEventType.ACCOUNT_LOCKED
+            if lockout_info.is_locked
+            else SecurityEventType.LOGIN_FAILURE
+        )
         severity = SecuritySeverity.HIGH if lockout_info.is_locked else SecuritySeverity.WARNING
 
         await security_crud.log_event(
