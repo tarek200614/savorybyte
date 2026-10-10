@@ -39,27 +39,6 @@ async def get_my_orders(
     return await order_crud.get_multi(db, customer_id=current_user.id)
 
 
-@router.get("/{order_id}", response_model=OrderOut)
-async def get_order_by_id(
-    order_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Retrieve an order by ID. Scoped to order owner for customers, or staff/admin."""
-    order = await order_crud.get_by_id(db, order_id)
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Order with ID {order_id} not found.",
-        )
-    if current_user.role == UserRole.CUSTOMER and order.customer_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access forbidden: You cannot view another patron's order.",
-        )
-    return order
-
-
 @router.get(
     "",
     response_model=list[OrderOut],
@@ -79,6 +58,27 @@ async def get_live_kitchen_orders(
     Protected: STAFF & ADMIN only.
     """
     return await order_crud.get_multi(db, status=status)
+
+
+@router.get("/{order_id}", response_model=OrderOut)
+async def get_order_by_id(
+    order_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve an order by ID. Scoped to order owner for customers, or staff/admin."""
+    order = await order_crud.get_by_id(db, order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Order with ID {order_id} not found.",
+        )
+    if current_user.role == UserRole.CUSTOMER and order.customer_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: You cannot view another patron's order.",
+        )
+    return order
 
 
 VALID_ORDER_TRANSITIONS: dict[OrderStatus, set[OrderStatus]] = {
