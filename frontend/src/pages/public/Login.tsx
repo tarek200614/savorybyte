@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/store/useAuth';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Token } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -20,12 +21,14 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -66,45 +69,50 @@ export function Login() {
         navigate('/reservations/book');
       }
     } catch (err: unknown) {
-      setErrorMessage((err as Error).message || 'Login failed');
+      setErrorMessage((err as Error).message || t.common.error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fillDemo = (email: string, pass: string) => {
+    setValue('email', email);
+    setValue('password', pass);
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full border-champagne/15 bg-charcoal shadow-2xl">
         <CardHeader className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-midnight border border-champagne/20 flex items-center justify-center text-champagne mx-auto">
             <Lock className="w-6 h-6" />
           </div>
-          <CardTitle className="text-2xl font-extrabold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-            Welcome Back
+          <CardTitle className="text-2xl font-serif font-bold text-ivory">
+            {t.auth.signInTitle}
           </CardTitle>
-          <p className="text-sm text-slate-400 font-light">
-            Sign in to manage your dining reservations and food orders
+          <p className="text-sm text-stone-400 font-light">
+            {t.auth.signInSubtitle}
           </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium text-center">
+              <div className="p-3 rounded-xl bg-midnight border border-terracotta/30 text-terracotta-light text-sm font-medium text-center">
                 {errorMessage}
               </div>
             )}
 
             <Input
-              label="Email Address"
+              label={t.auth.emailLabel}
               type="email"
-              placeholder="customer@example.com"
+              placeholder="e.g. customer@savorybyte.com"
               error={errors.email?.message}
               {...register('email')}
             />
 
             <Input
-              label="Password"
+              label={t.auth.passwordLabel}
               type="password"
               placeholder="••••••••"
               error={errors.password?.message}
@@ -114,21 +122,53 @@ export function Login() {
             <Button
               type="submit"
               variant="primary"
-              className="w-full font-bold py-3 mt-2"
+              className="w-full font-semibold shadow-md shadow-saffron/20"
               loading={loading}
             >
-              Sign In
+              {t.auth.signInBtn}
             </Button>
+
+            <div className="text-center pt-2">
+              <p className="text-xs text-stone-400">
+                <Link
+                  to="/register"
+                  className="font-semibold text-champagne hover:underline"
+                >
+                  {t.auth.noAccountPrompt}
+                </Link>
+              </p>
+            </div>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-400 border-t border-slate-800/80 pt-4">
-            Don't have an account yet?{' '}
-            <Link
-              to="/register"
-              className="text-amber-400 font-semibold hover:underline"
-            >
-              Create Account
-            </Link>
+          {/* Demo Logins Info */}
+          <div className="mt-6 pt-4 border-t border-champagne/15 space-y-2 text-[11px] text-stone-400 font-mono">
+            <p className="font-semibold text-stone-300">{t.auth.quickDemoAccounts}:</p>
+            <div className="grid grid-cols-1 gap-1 text-[11px]">
+              <button
+                type="button"
+                onClick={() => fillDemo('admin@savorybyte.com', 'AdminSecret123!')}
+                className="text-left rtl:text-right hover:text-champagne transition flex items-center justify-between"
+              >
+                <span>Admin: admin@savorybyte.com</span>
+                <span className="text-stone-500">AdminSecret123!</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemo('staff@savorybyte.com', 'StaffSecret123!')}
+                className="text-left rtl:text-right hover:text-champagne transition flex items-center justify-between"
+              >
+                <span>Staff: staff@savorybyte.com</span>
+                <span className="text-stone-500">StaffSecret123!</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemo('customer@savorybyte.com', 'CustomerSecret123!')}
+                className="text-left rtl:text-right hover:text-champagne transition flex items-center justify-between"
+              >
+                <span>Customer: customer@savorybyte.com</span>
+                <span className="text-stone-500">CustomerSecret123!</span>
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

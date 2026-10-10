@@ -4,6 +4,7 @@ from app.models.menu import Category, MenuItem
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.reservation import Reservation, ReservationStatus
 from app.models.review import Review
+from app.models.security import SecurityEvent, SecurityEventType, SecuritySeverity
 from app.models.setting import SystemSetting
 from app.models.table import RestaurantTable, TableLocation, TableStatus
 from app.models.user import User, UserRole
@@ -26,4 +27,7 @@ __all__ = [
     "OrderStatus",
     "Review",
     "SystemSetting",
+    "SecurityEvent",
+    "SecurityEventType",
+    "SecuritySeverity",
 ]

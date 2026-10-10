@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/services/api';
 import { Reservation, ReservationStatus } from '@/types';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -18,36 +19,19 @@ import {
   Filter,
 } from 'lucide-react';
 
-const STATUS_TRANSITIONS: Record<ReservationStatus, { label: string; next: ReservationStatus; icon: typeof CheckCircle2; variant: 'primary' | 'danger' | 'secondary' }[]> = {
-  PENDING: [
-    { label: 'Confirm', next: 'CONFIRMED', icon: CheckCircle2, variant: 'primary' },
-    { label: 'Cancel', next: 'CANCELLED', icon: XCircle, variant: 'danger' },
-  ],
-  CONFIRMED: [
-    { label: 'Seat Guest', next: 'SEATED', icon: UserCheck, variant: 'primary' },
-    { label: 'No Show', next: 'NO_SHOW', icon: XCircle, variant: 'danger' },
-    { label: 'Cancel', next: 'CANCELLED', icon: XCircle, variant: 'danger' },
-  ],
-  SEATED: [
-    { label: 'Complete', next: 'COMPLETED', icon: LogOut, variant: 'primary' },
-  ],
-  COMPLETED: [],
-  CANCELLED: [],
-  NO_SHOW: [],
-};
-
-const STATUS_BADGE_MAP: Record<string, 'emerald' | 'amber' | 'blue' | 'purple' | 'rose' | 'slate'> = {
-  PENDING: 'amber',
-  CONFIRMED: 'emerald',
-  SEATED: 'blue',
-  COMPLETED: 'purple',
-  CANCELLED: 'rose',
-  NO_SHOW: 'slate',
+const STATUS_BADGE_MAP: Record<string, 'botanical' | 'saffron' | 'champagne' | 'terracotta' | 'neutral'> = {
+  PENDING: 'champagne',
+  CONFIRMED: 'botanical',
+  SEATED: 'saffron',
+  COMPLETED: 'neutral',
+  CANCELLED: 'terracotta',
+  NO_SHOW: 'terracotta',
 };
 
 type FilterStatus = ReservationStatus | 'ALL';
 
 export function StaffDashboard() {
+  const { t, resolveReservationStatus } = useTranslation();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
 
@@ -68,138 +52,159 @@ export function StaffDashboard() {
     },
   });
 
-  const filtered = reservations?.filter(
-    (r) => statusFilter === 'ALL' || r.status === statusFilter
-  );
+  const getTransitions = (status: ReservationStatus) => {
+    switch (status) {
+      case 'PENDING':
+        return [
+          { label: t.common.confirm, next: 'CONFIRMED' as ReservationStatus, icon: CheckCircle2, variant: 'primary' as const },
+          { label: t.common.cancel, next: 'CANCELLED' as ReservationStatus, icon: XCircle, variant: 'danger' as const },
+        ];
+      case 'CONFIRMED':
+        return [
+          { label: resolveReservationStatus('SEATED'), next: 'SEATED' as ReservationStatus, icon: UserCheck, variant: 'primary' as const },
+          { label: resolveReservationStatus('NO_SHOW'), next: 'NO_SHOW' as ReservationStatus, icon: XCircle, variant: 'danger' as const },
+          { label: t.common.cancel, next: 'CANCELLED' as ReservationStatus, icon: XCircle, variant: 'danger' as const },
+        ];
+      case 'SEATED':
+        return [
+          { label: resolveReservationStatus('COMPLETED'), next: 'COMPLETED' as ReservationStatus, icon: LogOut, variant: 'primary' as const },
+        ];
+      default:
+        return [];
+    }
+  };
 
-  const statusCounts = reservations?.reduce(
-    (acc, r) => {
-      acc[r.status] = (acc[r.status] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
+  const filteredReservations = reservations?.filter(
+    (res) => statusFilter === 'ALL' || res.status === statusFilter
   );
-
-  const filterOptions: { label: string; value: FilterStatus }[] = [
-    { label: `All (${reservations?.length || 0})`, value: 'ALL' },
-    { label: `Pending (${statusCounts?.PENDING || 0})`, value: 'PENDING' },
-    { label: `Confirmed (${statusCounts?.CONFIRMED || 0})`, value: 'CONFIRMED' },
-    { label: `Seated (${statusCounts?.SEATED || 0})`, value: 'SEATED' },
-    { label: `Completed (${statusCounts?.COMPLETED || 0})`, value: 'COMPLETED' },
-  ];
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
+    <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-100 flex items-center space-x-3">
-            <Calendar className="w-8 h-8 text-amber-400" />
-            <span>Staff Reservation Manager</span>
+          <h1 className="text-3xl font-serif font-bold text-ivory flex items-center space-x-3 rtl:space-x-reverse">
+            <Calendar className="w-8 h-8 text-champagne" />
+            <span>{t.nav.staff}</span>
           </h1>
-          <p className="text-sm text-slate-400 font-light mt-1">
-            View, confirm, seat, and manage all dining reservations in real-time
+          <p className="text-xs text-stone-400 mt-1">
+            {t.admin.subtitle}
           </p>
         </div>
 
-        <div className="text-xs font-mono text-slate-500 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-          Auto-refreshing every 15s
+        {/* Filter Badges */}
+        <div className="flex items-center space-x-1.5 rtl:space-x-reverse overflow-x-auto pb-2 scrollbar-none bg-charcoal p-1.5 rounded-xl border border-champagne/15">
+          <Filter className="w-4 h-4 text-stone-400 mx-1.5" />
+          {(['ALL', 'PENDING', 'CONFIRMED', 'SEATED', 'COMPLETED', 'CANCELLED'] as FilterStatus[]).map(
+            (status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold font-mono transition whitespace-nowrap ${
+                  statusFilter === status
+                    ? 'bg-saffron text-white shadow-sm'
+                    : 'text-stone-300 hover:text-ivory hover:bg-white/5'
+                }`}
+              >
+                {status === 'ALL' ? t.menu.allCategories : resolveReservationStatus(status)}
+              </button>
+            )
+          )}
         </div>
       </div>
 
-      {/* Status Filter Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-        <Filter className="w-4 h-4 text-slate-500 flex-shrink-0" />
-        {filterOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setStatusFilter(opt.value)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-              statusFilter === opt.value
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-100'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Reservation Cards */}
+      {/* Grid of Reservations */}
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
         </div>
-      ) : !filtered || filtered.length === 0 ? (
+      ) : !filteredReservations || filteredReservations.length === 0 ? (
         <EmptyState
-          title="No Reservations Found"
-          description="No reservations match the current filter."
+          title={t.bookings.noBookingsTitle}
+          description={t.bookings.noBookingsDesc}
         />
       ) : (
-        <div className="space-y-4">
-          {filtered.map((res) => (
-            <Card key={res.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  {/* Left: Reservation Info */}
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center space-x-3 flex-wrap gap-y-1">
-                      <span className="font-bold text-lg text-slate-100">
-                        Table {res.table?.table_number || 'N/A'}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredReservations.map((res) => {
+            const transitions = getTransitions(res.status);
+            return (
+              <Card
+                key={res.id}
+                className="flex flex-col justify-between border-champagne/15 bg-charcoal hover:border-champagne/40 transition shadow-lg"
+              >
+                <CardContent className="p-5 space-y-4">
+                  {/* Header Info */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="font-serif font-bold text-lg text-ivory">
+                        {t.common.table} {res.table?.table_number || 'Unassigned'}
                       </span>
-                      <Badge variant={STATUS_BADGE_MAP[res.status] || 'slate'}>
-                        {res.status}
-                      </Badge>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 text-xs text-slate-400 font-mono">
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{res.reservation_date}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Clock className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{res.start_time} – {res.end_time}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Users className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{res.party_size} Guests</span>
-                      </span>
-                    </div>
-
-                    {res.special_requests && (
-                      <p className="text-xs text-slate-500 italic">
-                        Note: "{res.special_requests}"
+                      <p className="text-xs text-stone-400 font-medium">
+                        {res.customer?.full_name || 'Guest'}
                       </p>
-                    )}
+                    </div>
+                    <Badge variant={STATUS_BADGE_MAP[res.status] || 'neutral'}>
+                      {resolveReservationStatus(res.status)}
+                    </Badge>
                   </div>
 
-                  {/* Right: Action Buttons */}
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    {STATUS_TRANSITIONS[res.status as ReservationStatus]?.map((action) => (
-                      <Button
-                        key={action.next}
-                        variant={action.variant}
-                        size="sm"
-                        loading={updateStatusMutation.isPending}
-                        onClick={() =>
-                          updateStatusMutation.mutate({
-                            id: res.id,
-                            status: action.next,
-                          })
-                        }
-                      >
-                        <action.icon className="w-4 h-4" />
-                        {action.label}
-                      </Button>
-                    ))}
+                  {/* Details */}
+                  <div className="space-y-1.5 text-xs text-stone-300 font-mono">
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                      <Calendar className="w-3.5 h-3.5 text-champagne" />
+                      <span>{res.reservation_date}</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                      <Clock className="w-3.5 h-3.5 text-champagne" />
+                      <span dir="ltr">
+                        {res.start_time} – {res.end_time}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                      <Users className="w-3.5 h-3.5 text-champagne" />
+                      <span>{res.party_size} {t.common.guests}</span>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  {/* Special Requests */}
+                  {res.special_requests && (
+                    <div className="p-2.5 rounded-lg bg-midnight border border-champagne/15 text-[11px] text-stone-300 italic">
+                      "{res.special_requests}"
+                    </div>
+                  )}
+                </CardContent>
+
+                {/* Status Action Buttons */}
+                {transitions.length > 0 && (
+                  <div className="p-4 bg-midnight/80 border-t border-champagne/15 flex flex-wrap gap-2">
+                    {transitions.map((action) => {
+                      const Icon = action.icon;
+                      return (
+                        <Button
+                          key={action.next}
+                          size="sm"
+                          variant={action.variant}
+                          loading={updateStatusMutation.isPending}
+                          onClick={() =>
+                            updateStatusMutation.mutate({
+                              id: res.id,
+                              status: action.next,
+                            })
+                          }
+                          className="text-xs font-semibold flex-1"
+                        >
+                          <Icon className="w-3.5 h-3.5 mr-1 rtl:mr-0 rtl:ml-1" />
+                          {action.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '@/services/api';
 import { User } from '@/types';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +28,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function Register() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +57,7 @@ export function Register() {
 
       navigate('/login');
     } catch (err: unknown) {
-      setErrorMessage((err as Error).message || 'Registration failed');
+      setErrorMessage((err as Error).message || t.common.error);
     } finally {
       setLoading(false);
     }
@@ -63,52 +65,52 @@ export function Register() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full border-champagne/15 bg-charcoal shadow-2xl">
         <CardHeader className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-midnight border border-champagne/20 flex items-center justify-center text-champagne mx-auto">
             <UserPlus className="w-6 h-6" />
           </div>
-          <CardTitle className="text-2xl font-extrabold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-            Create Customer Account
+          <CardTitle className="text-2xl font-serif font-bold text-ivory">
+            {t.auth.registerTitle}
           </CardTitle>
-          <p className="text-sm text-slate-400 font-light">
-            Join SavoryByte for seamless fine dining reservations and food ordering
+          <p className="text-sm text-stone-400 font-light">
+            {t.auth.registerSubtitle}
           </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium text-center">
+              <div className="p-3 rounded-xl bg-midnight border border-terracotta/30 text-terracotta-light text-sm font-medium text-center">
                 {errorMessage}
               </div>
             )}
 
             <Input
-              label="Full Name"
-              placeholder="Alice Johnson"
+              label={t.auth.fullNameLabel}
+              placeholder="e.g. Sophia Montgomery"
               error={errors.full_name?.message}
               {...register('full_name')}
             />
 
             <Input
-              label="Email Address"
+              label={t.auth.emailLabel}
               type="email"
-              placeholder="alice@example.com"
+              placeholder="e.g. customer@savorybyte.com"
               error={errors.email?.message}
               {...register('email')}
             />
 
             <Input
-              label="Phone Number (Optional)"
+              label={t.auth.phoneLabel}
               type="tel"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+1 (555) 123-4567"
               error={errors.phone?.message}
               {...register('phone')}
             />
 
             <Input
-              label="Password"
+              label={`${t.auth.passwordLabel} (min. 8 chars)`}
               type="password"
               placeholder="••••••••"
               error={errors.password?.message}
@@ -126,22 +128,20 @@ export function Register() {
             <Button
               type="submit"
               variant="primary"
-              className="w-full font-bold py-3 mt-2"
+              className="w-full font-semibold shadow-md shadow-saffron/20"
               loading={loading}
             >
-              Register Account
+              {t.auth.registerBtn}
             </Button>
-          </form>
 
-          <div className="mt-6 text-center text-xs text-slate-400 border-t border-slate-800/80 pt-4">
-            Already have an account?{' '}
-            <Link
-              to="/login"
-              className="text-amber-400 font-semibold hover:underline"
-            >
-              Sign In
-            </Link>
-          </div>
+            <div className="text-center pt-2">
+              <p className="text-xs text-stone-400">
+                <Link to="/login" className="font-semibold text-champagne hover:underline">
+                  {t.auth.haveAccountPrompt}
+                </Link>
+              </p>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

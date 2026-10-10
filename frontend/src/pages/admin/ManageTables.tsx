@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '@/services/api';
 import { RestaurantTable, TableLocation } from '@/types';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -12,7 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { CardSkeleton } from '@/components/feedback/Skeleton';
-import { UtensilsCrossed, Plus, Trash2 } from 'lucide-react';
+import { UtensilsCrossed, Plus, Trash2, Users } from 'lucide-react';
 
 const tableSchema = z.object({
   table_number: z.string().min(1, 'Table number is required'),
@@ -22,16 +23,17 @@ const tableSchema = z.object({
 
 type TableFormValues = z.infer<typeof tableSchema>;
 
-const LOCATION_OPTIONS: { value: TableLocation; label: string }[] = [
-  { value: 'MAIN_HALL', label: 'Main Hall' },
-  { value: 'TERRACE', label: 'Terrace' },
-  { value: 'PRIVATE_ROOM', label: 'Private Room' },
-  { value: 'BAR', label: 'Bar' },
-];
-
 export function ManageTables() {
+  const { t, resolveLocation } = useTranslation();
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
+
+  const locationOptions: { value: TableLocation; label: string }[] = [
+    { value: 'MAIN_HALL', label: resolveLocation('MAIN_HALL').name },
+    { value: 'TERRACE', label: resolveLocation('TERRACE').name },
+    { value: 'PRIVATE_ROOM', label: resolveLocation('PRIVATE_ROOM').name },
+    { value: 'BAR', label: resolveLocation('BAR').name },
+  ];
 
   const { data: tables, isLoading } = useQuery<RestaurantTable[]>({
     queryKey: ['admin-tables'],
@@ -86,96 +88,96 @@ export function ManageTables() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-100 flex items-center space-x-3">
-            <UtensilsCrossed className="w-8 h-8 text-amber-400" />
-            <span>Table Management</span>
+          <h1 className="text-3xl font-serif font-bold text-ivory flex items-center space-x-3 rtl:space-x-reverse">
+            <UtensilsCrossed className="w-8 h-8 text-champagne" />
+            <span>{t.admin.manageTables}</span>
           </h1>
-          <p className="text-sm text-slate-400 font-light mt-1">
-            Add, configure, and manage restaurant dining tables
+          <p className="text-xs text-stone-400 mt-1 font-light">
+            {t.home.diningSettingsDesc}
           </p>
         </div>
 
-        <Button variant="primary" onClick={openCreate}>
-          <Plus className="w-4 h-4" /> Add Table
+        <Button variant="primary" onClick={openCreate} className="shadow-md shadow-saffron/20">
+          <Plus className="w-4 h-4 mr-1.5 rtl:mr-0 rtl:ml-1.5" /> {t.common.save}
         </Button>
       </div>
 
       {/* Tables Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
         </div>
       ) : !tables || tables.length === 0 ? (
         <EmptyState
-          title="No Tables Configured"
-          description="Add your first dining table to start accepting reservations."
-          action={
-            <Button variant="primary" onClick={openCreate}>
-              <Plus className="w-4 h-4" /> Add First Table
-            </Button>
-          }
+          title={t.admin.activeTables}
+          description={t.common.error}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {tables.map((table) => (
-            <Card key={table.id}>
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-lg text-slate-100">
-                    {table.table_number}
-                  </span>
-                  <Badge variant="amber">
-                    {table.location.replace('_', ' ')}
-                  </Badge>
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tables.map((table) => {
+            const zoneInfo = resolveLocation(table.location);
+            return (
+              <Card
+                key={table.id}
+                className="border-champagne/15 bg-charcoal hover:border-champagne/40 transition shadow-xl"
+              >
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-serif font-bold text-lg text-ivory">
+                        {t.common.table} {table.table_number}
+                      </h3>
+                      <p className="text-xs text-stone-400 font-medium">
+                        {zoneInfo.name}
+                      </p>
+                    </div>
+                    <Badge variant={table.status === 'AVAILABLE' ? 'botanical' : 'champagne'}>
+                      {table.status === 'AVAILABLE' ? t.common.available : table.status}
+                    </Badge>
+                  </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-                  <span>Capacity:</span>
-                  <span className="text-amber-300 font-bold">{table.capacity} Seats</span>
-                </div>
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-stone-300 font-mono">
+                    <Users className="w-4 h-4 text-champagne" />
+                    <span>{t.bookings.partySize}: <strong className="text-ivory">{table.capacity} {t.common.guests}</strong></span>
+                  </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-                  <span>Status:</span>
-                  <Badge variant={table.is_active ? 'emerald' : 'rose'}>
-                    {table.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center space-x-2 pt-2 border-t border-slate-800/80">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    className="flex-1"
-                    loading={deleteMutation.isPending}
-                    onClick={() => {
-                      if (window.confirm(`Delete table ${table.table_number}?`)) {
-                        deleteMutation.mutate(table.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Remove
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="pt-3 border-t border-champagne/15 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      loading={deleteMutation.isPending}
+                      onClick={() => {
+                        if (confirm(`${t.admin.deleteDishConfirm} (${t.common.table} ${table.table_number})`)) {
+                          deleteMutation.mutate(table.id);
+                        }
+                      }}
+                      className="text-xs text-terracotta hover:text-terracotta-light hover:bg-terracotta/10"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1 rtl:mr-0 rtl:ml-1" />
+                      {t.common.delete}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Create Table Modal */}
-      <Modal isOpen={showModal} onClose={closeModal} title="Add New Table">
+      <Modal isOpen={showModal} onClose={closeModal} title={t.admin.manageTables}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Table Number / Name"
-            placeholder="T-01, VIP-1, etc."
+            label={t.common.table}
+            placeholder="e.g. T-04, TERR-03, MAJLIS-02"
             error={errors.table_number?.message}
             {...register('table_number')}
           />
 
           <Input
-            label="Seating Capacity"
+            label={t.bookings.partySize}
             type="number"
             min={1}
             max={50}
@@ -184,40 +186,30 @@ export function ManageTables() {
           />
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Location
+            <label className="block text-xs font-semibold text-stone-300 uppercase tracking-wider">
+              {t.home.seatingOptionsPill}
             </label>
             <select
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-amber-500/80 focus:ring-2 focus:ring-amber-500/30 transition"
+              className="w-full px-4 py-2.5 rounded-xl bg-midnight border border-champagne/20 text-ivory text-sm focus:outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/30 transition"
               {...register('location')}
             >
-              {LOCATION_OPTIONS.map((opt) => (
+              {locationOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
             {errors.location && (
-              <p className="text-xs text-rose-400">{errors.location.message}</p>
+              <p className="text-xs text-terracotta font-medium">{errors.location.message}</p>
             )}
           </div>
 
-          <div className="flex items-center space-x-3 pt-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={closeModal}
-              className="flex-1"
-            >
-              Cancel
+          <div className="flex items-center justify-end space-x-3 rtl:space-x-reverse pt-4 border-t border-champagne/15">
+            <Button variant="ghost" type="button" onClick={closeModal}>
+              {t.common.cancel}
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              className="flex-1"
-              loading={isSubmitting || createMutation.isPending}
-            >
-              Create Table
+            <Button variant="primary" type="submit" loading={isSubmitting}>
+              {t.common.save}
             </Button>
           </div>
         </form>

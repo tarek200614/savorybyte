@@ -39,6 +39,27 @@ async def get_my_orders(
     return await order_crud.get_multi(db, customer_id=current_user.id)
 
 
+@router.get("/{order_id}", response_model=OrderOut)
+async def get_order_by_id(
+    order_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve an order by ID. Scoped to order owner for customers, or staff/admin."""
+    order = await order_crud.get_by_id(db, order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Order with ID {order_id} not found.",
+        )
+    if current_user.role == UserRole.CUSTOMER and order.customer_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: You cannot view another patron's order.",
+        )
+    return order
+
+
 @router.get(
     "",
     response_model=list[OrderOut],
@@ -60,6 +81,16 @@ async def get_live_kitchen_orders(
     return await order_crud.get_multi(db, status=status)
 
 
+VALID_ORDER_TRANSITIONS: dict[OrderStatus, set[OrderStatus]] = {
+    OrderStatus.PENDING: {OrderStatus.PREPARING, OrderStatus.CANCELLED},
+    OrderStatus.PREPARING: {OrderStatus.READY, OrderStatus.CANCELLED},
+    OrderStatus.READY: {OrderStatus.SERVED, OrderStatus.CANCELLED},
+    OrderStatus.SERVED: {OrderStatus.PAID},
+    OrderStatus.PAID: set(),
+    OrderStatus.CANCELLED: set(),
+}
+
+
 @router.patch(
     "/{order_id}",
     response_model=OrderOut,
@@ -78,8 +109,18 @@ async def update_order_status(
     """
     Update order lifecycle status (PENDING -> PREPARING -> READY -> SERVED -> PAID).
     Protected: STAFF & ADMIN only.
+    Enforces strict state machine transition validation.
     """
     order = await order_crud.get_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found.")
+
+    if order_in.status is not None and order_in.status != order.status:
+        allowed_next = VALID_ORDER_TRANSITIONS.get(order.status, set())
+        if order_in.status not in allowed_next:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid order status transition from {order.status} to {order_in.status}.",
+            )
+
     return await order_crud.update(db, order, order_in)

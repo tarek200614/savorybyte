@@ -4,16 +4,23 @@ from collections.abc import AsyncGenerator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base, get_db
 from app.core.security import get_password_hash
+import app.models as _models  # noqa: F401
 from app.main import app
 from app.models.user import User, UserRole
 
-# Use SQLite in-memory database for fast, isolated unit tests
+# Use SQLite in-memory database with StaticPool for fast, isolated unit tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine_test = create_async_engine(TEST_DATABASE_URL, echo=False)
+engine_test = create_async_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+    echo=False,
+)
 TestingSessionLocal = async_sessionmaker(
     bind=engine_test, class_=AsyncSession, expire_on_commit=False
 )
@@ -76,6 +83,23 @@ async def test_user_admin(prepare_database) -> User:
             full_name="Bob Admin",
             phone="+1987654321",
             role=UserRole.ADMIN,
+            is_active=True,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        return user
+
+
+@pytest.fixture
+async def test_user_staff(prepare_database) -> User:
+    async with TestingSessionLocal() as db:
+        user = User(
+            email="staff@example.com",
+            password_hash=get_password_hash("staffpassword123"),
+            full_name="Sam Staff",
+            phone="+1987654322",
+            role=UserRole.STAFF,
             is_active=True,
         )
         db.add(user)

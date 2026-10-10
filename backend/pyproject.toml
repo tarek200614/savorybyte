@@ -22,7 +22,7 @@ select = [
     "C4", # flake8-comprehensions
     "UP", # pyupgrade
 ]
-ignore = ["B008"] # Do not perform function calls in argument defaults (FastAPI Depends idiom)
+ignore = ["B008", "E501"] # B008 for FastAPI Depends, E501 for long asset URLs
 
 [tool.pytest.ini_options]
 minversion = "8.0"

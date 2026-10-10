@@ -45,3 +45,14 @@ pgdata/
 .idea/
 *.swp
 *.swo
+.kilo/
+scratch/
+
+# Vercel
+.vercel/
+
+# Credentials & Keys
+*.pem
+*.key
+*.crt
+*.cert

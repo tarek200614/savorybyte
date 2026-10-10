@@ -2,8 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-background: #08111F;
+  --color-surface: #14171B;
+  --color-surface-elevated: #1F242C;
+  --color-primary: #C96A2B;
+  --color-primary-hover: #AF5620;
+  --color-secondary: #C9A66B;
+  --color-accent: #C96A2B;
+  --color-text: #F5EFE4;
+  --color-text-muted: #B9AEA0;
+  --color-border: rgba(201, 166, 107, 0.15);
+  --color-success: #536653;
+  --color-warning: #C9A66B;
+  --color-error: #A9472F;
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased selection:bg-amber-500/30 selection:text-amber-200;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply antialiased selection:bg-saffron/30 selection:text-champagne-light;
+  }
+
+  h1, h2, h3, .font-serif, .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
+
+/* Global Sticky Header Anchor Offset */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+section[id], h1[id], h2[id], h3[id], div[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Restrained micro-interactions & smooth transitions */
+.smooth-transition {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* RTL Typography & Directional styling */
+html[dir="rtl"] body,
+html[lang="ar"] body {
+  font-family: 'Alexandria', 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] .font-serif,
+html[dir="rtl"] .font-display,
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] .font-serif,
+html[lang="ar"] .font-display {
+  font-family: 'Amiri', 'Alexandria', Georgia, serif;
+}
+
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+

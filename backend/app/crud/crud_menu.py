@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.menu import Category, MenuItem
-from app.schemas.menu import CategoryCreate, MenuItemCreate
+from app.schemas.menu import CategoryCreate, MenuItemCreate, MenuItemUpdate
 
 
 class CRUDMenu:
@@ -88,6 +88,60 @@ class CRUDMenu:
         db.add(db_obj)
         await db.commit()
         return await self.get_item_by_id(db, db_obj.id)  # type: ignore
+
+    async def update_item(
+        self, db: AsyncSession, item_id: uuid.UUID, obj_in: MenuItemUpdate
+    ) -> MenuItem | None:
+        item = await self.get_item_by_id(db, item_id)
+        if not item:
+            return None
+
+        # Validate category if changing
+        if obj_in.category_id is not None:
+            category = await self.get_category_by_id(db, obj_in.category_id)
+            if not category:
+                raise ValueError(f"Category with ID {obj_in.category_id} does not exist.")
+            item.category_id = obj_in.category_id
+
+        if obj_in.name is not None:
+            item.name = obj_in.name
+            # Generate safe URL slug
+            clean_slug = "".join(c if c.isalnum() else "-" for c in obj_in.name.lower()).strip("-")
+            while "--" in clean_slug:
+                clean_slug = clean_slug.replace("--", "-")
+            item.slug = clean_slug or str(item_id)[:8]
+
+        if obj_in.description is not None:
+            item.description = obj_in.description
+
+        if obj_in.price is not None:
+            item.price = obj_in.price
+
+        if obj_in.image_url is not None:
+            item.image_url = obj_in.image_url
+
+        if obj_in.is_available is not None:
+            item.is_available = obj_in.is_available
+
+        if obj_in.is_vegetarian is not None:
+            item.is_vegetarian = obj_in.is_vegetarian
+
+        if obj_in.is_gluten_free is not None:
+            item.is_gluten_free = obj_in.is_gluten_free
+
+        if obj_in.preparation_time_mins is not None:
+            item.preparation_time_mins = obj_in.preparation_time_mins
+
+        await db.commit()
+        return await self.get_item_by_id(db, item.id)
+
+    async def delete_item(self, db: AsyncSession, item_id: uuid.UUID) -> bool:
+        item = await self.get_item_by_id(db, item_id)
+        if not item:
+            return False
+        await db.delete(item)
+        await db.commit()
+        return True
 
 
 menu_crud = CRUDMenu()

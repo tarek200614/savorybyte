@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '@/services/api';
 import { RestaurantTable, Reservation, TableLocation } from '@/types';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -18,6 +19,8 @@ import {
   AlertCircle,
   ShieldCheck,
   MapPin,
+  Users,
+  Check,
 } from 'lucide-react';
 
 const bookSchema = z.object({
@@ -31,19 +34,20 @@ const bookSchema = z.object({
 
 type BookFormValues = z.infer<typeof bookSchema>;
 
-const ZONE_FILTERS: { value: TableLocation | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: 'All Zones' },
-  { value: 'MAIN_HALL', label: 'Main Dining Hall' },
-  { value: 'TERRACE', label: 'Garden Terrace' },
-  { value: 'PRIVATE_ROOM', label: 'Executive Majlis' },
-  { value: 'BAR', label: 'Mocktail Lounge' },
-];
-
 export function BookTable() {
   const navigate = useNavigate();
+  const { t, resolveLocation } = useTranslation();
   const [selectedZone, setSelectedZone] = useState<TableLocation | 'ALL'>('ALL');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<boolean>(false);
+
+  const zoneFilterOptions: { value: TableLocation | 'ALL'; label: string }[] = [
+    { value: 'ALL', label: t.reservations.allAreas },
+    { value: 'MAIN_HALL', label: resolveLocation('MAIN_HALL').name },
+    { value: 'TERRACE', label: resolveLocation('TERRACE').name },
+    { value: 'PRIVATE_ROOM', label: resolveLocation('PRIVATE_ROOM').name },
+    { value: 'BAR', label: resolveLocation('BAR').name },
+  ];
 
   // Fetch available tables
   const { data: tables, isLoading: loadingTables } = useQuery<RestaurantTable[]>({
@@ -95,8 +99,7 @@ export function BookTable() {
       setTimeout(() => navigate('/my-reservations'), 1800);
     } catch (err: unknown) {
       setErrorMessage(
-        (err as Error).message ||
-          'The selected table is currently unavailable for this time slot. Please choose another table or time.'
+        (err as Error).message || t.reservations.conflictError
       );
     }
   };
@@ -105,34 +108,34 @@ export function BookTable() {
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
       {/* Header Banner */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Instant Table Allocation with Collision Prevention</span>
+        <div className="inline-flex items-center space-x-2 rtl:space-x-reverse px-3 py-1 rounded-full bg-charcoal border border-champagne/20 text-champagne text-xs font-semibold uppercase tracking-wider">
+          <Sparkles className="w-4 h-4 text-champagne" />
+          <span>{t.reservations.badge}</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-100 tracking-tight">
-          Reserve Your Dining Experience
+        <h1 className="text-3xl sm:text-5xl font-serif font-bold text-ivory tracking-tight">
+          {t.reservations.title}
         </h1>
-        <p className="text-slate-400 max-w-xl mx-auto font-light text-sm">
-          Select your preferred ambiance zone, dining table, and dining time slot. All meals are prepared strictly adhering to 100% Halal culinary standards.
+        <p className="text-stone-300 max-w-xl mx-auto font-light text-sm leading-relaxed">
+          {t.reservations.desc}
         </p>
       </div>
 
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center space-x-3 max-w-lg mx-auto animate-fade-in shadow-xl shadow-emerald-500/5">
-          <CheckCircle2 className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+        <div className="p-4 rounded-2xl bg-charcoal border border-champagne/40 text-champagne flex items-center space-x-3 rtl:space-x-reverse max-w-lg mx-auto animate-fade-in shadow-xl">
+          <CheckCircle2 className="w-6 h-6 text-champagne flex-shrink-0" />
           <div>
-            <p className="font-bold text-sm">Table Successfully Reserved!</p>
-            <p className="text-xs text-emerald-400/80">Redirecting to your reservation pass...</p>
+            <p className="font-bold text-sm text-ivory">{t.reservations.successTitle}</p>
+            <p className="text-xs text-stone-300">{t.reservations.successDesc}</p>
           </div>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center space-x-3 max-w-lg mx-auto shadow-xl shadow-rose-500/5">
-          <AlertCircle className="w-6 h-6 text-rose-400 flex-shrink-0" />
+        <div className="p-4 rounded-2xl bg-midnight border border-terracotta/40 text-terracotta-light flex items-center space-x-3 rtl:space-x-reverse max-w-lg mx-auto shadow-xl">
+          <AlertCircle className="w-6 h-6 text-terracotta flex-shrink-0" />
           <div>
-            <p className="font-bold text-sm">Booking Notice</p>
-            <p className="text-xs text-rose-400/90">{errorMessage}</p>
+            <p className="font-bold text-sm text-ivory">{t.reservations.noticeTitle}</p>
+            <p className="text-xs text-stone-300">{errorMessage}</p>
           </div>
         </div>
       )}
@@ -141,22 +144,27 @@ export function BookTable() {
         {/* Step 1: Interactive Table Floor Plan Selection */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-slate-200 flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-amber-400" />
-              <span>1. Select Dining Zone & Table</span>
-            </h2>
+            <div>
+              <h2 className="text-lg font-serif font-bold text-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                <MapPin className="w-5 h-5 text-champagne" />
+                <span>{t.reservations.step1Title}</span>
+              </h2>
+              <p className="text-xs text-stone-400 font-light mt-0.5">
+                {t.reservations.step1Desc}
+              </p>
+            </div>
 
             {/* Zone Filter Tabs */}
-            <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-              {ZONE_FILTERS.map((zone) => (
+            <div className="flex items-center space-x-2 rtl:space-x-reverse overflow-x-auto pb-1 scrollbar-none text-xs">
+              {zoneFilterOptions.map((zone) => (
                 <button
                   type="button"
                   key={zone.value}
                   onClick={() => setSelectedZone(zone.value)}
-                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-xl font-semibold transition whitespace-nowrap ${
                     selectedZone === zone.value
-                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
+                      ? 'bg-saffron text-white shadow-md shadow-saffron/20 border border-saffron'
+                      : 'bg-charcoal border border-champagne/15 text-stone-300 hover:text-ivory hover:bg-white/5'
                   }`}
                 >
                   {zone.label}
@@ -173,40 +181,66 @@ export function BookTable() {
               <CardSkeleton />
             </div>
           ) : !filteredTables || filteredTables.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              No tables found in this zone. Please select another zone.
+            <div className="text-center py-8 text-stone-500">
+              {t.common.error}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {filteredTables.map((table) => {
                 const isSelected = selectedTableId === table.id;
+                const zoneInfo = resolveLocation(table.location);
                 return (
                   <div
                     key={table.id}
                     onClick={() => setValue('table_id', table.id)}
-                    className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${
+                    className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/40 shadow-lg shadow-amber-500/10'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                        ? 'bg-charcoal border-saffron ring-2 ring-saffron/40 shadow-lg shadow-saffron/20 transform -translate-y-0.5'
+                        : 'bg-charcoal border-champagne/15 hover:border-champagne/40 hover:bg-charcoal/80'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-base text-slate-100 font-mono">
-                        Table {table.table_number}
-                      </span>
-                      <Badge variant="amber" className="text-[10px]">
-                        {table.location.replace('_', ' ')}
-                      </Badge>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-base text-ivory font-mono">
+                          {t.common.table} {table.table_number}
+                        </span>
+                        <Badge
+                          variant={isSelected ? 'saffron' : 'champagne'}
+                          className="text-[10px]"
+                        >
+                          {zoneInfo.name}
+                        </Badge>
+                      </div>
+
+                      <p className="text-[11px] text-stone-400 mt-2 line-clamp-2 leading-relaxed font-light">
+                        {zoneInfo.subtitle}
+                      </p>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-400 font-mono">
-                      <span>Max Capacity:</span>
-                      <span className="text-amber-300 font-bold">{table.capacity} Guests</span>
-                    </div>
+                    <div className="mt-4 pt-3 border-t border-champagne/15 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-stone-400 flex items-center space-x-1 rtl:space-x-reverse">
+                          <Users className="w-3.5 h-3.5 text-champagne" />
+                          <span>{t.bookings.partySize}</span>
+                        </span>
+                        <span className="text-champagne font-bold">
+                          {t.reservations.capacity.replace('{count}', String(table.capacity))}
+                        </span>
+                      </div>
 
-                    <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                      <span className="text-slate-500">Status:</span>
-                      <span className="text-emerald-400 font-semibold">Available</span>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-stone-400">{t.common.status}:</span>
+                        <span className={`font-semibold flex items-center space-x-1 rtl:space-x-reverse ${isSelected ? 'text-saffron' : 'text-botanical-light'}`}>
+                          {isSelected ? (
+                            <>
+                              <Check className="w-3 h-3 text-saffron" />
+                              <span>{t.common.selected}</span>
+                            </>
+                          ) : (
+                            <span>{t.common.available}</span>
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -214,32 +248,35 @@ export function BookTable() {
             </div>
           )}
           {errors.table_id && (
-            <p className="text-xs text-rose-400 font-medium">{errors.table_id.message}</p>
+            <p className="text-xs text-terracotta font-medium">{errors.table_id.message}</p>
           )}
 
           {selectedTable && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center space-x-2">
-              <CheckCircle2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <span>
-                Selected: <strong>Table {selectedTable.table_number}</strong> ({selectedTable.location.replace('_', ' ')}) with seating for up to <strong>{selectedTable.capacity} guests</strong>.
+            <div className="p-3.5 rounded-xl bg-charcoal border border-champagne/30 text-champagne text-xs flex items-center space-x-2 rtl:space-x-reverse">
+              <CheckCircle2 className="w-4 h-4 text-champagne flex-shrink-0" />
+              <span className="text-ivory">
+                {t.reservations.selectedNotice
+                  .replace('{name}', `${t.common.table} ${selectedTable.table_number}`)
+                  .replace('{location}', resolveLocation(selectedTable.location).name)
+                  .replace('{capacity}', String(selectedTable.capacity))}
               </span>
             </div>
           )}
         </div>
 
         {/* Step 2: Date, Time & Reservation Details */}
-        <Card className="border-slate-800 bg-slate-900/90 shadow-2xl">
+        <Card className="border-champagne/20 bg-charcoal/95 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-amber-400" />
-              <span>2. Reservation Date & Time Details</span>
+            <CardTitle className="text-lg font-serif font-bold flex items-center space-x-2 rtl:space-x-reverse text-ivory">
+              <Calendar className="w-5 h-5 text-champagne" />
+              <span>{t.reservations.step2Title}</span>
             </CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Reservation Date"
+                label={t.reservations.dateLabel}
                 type="date"
                 min={new Date().toISOString().split('T')[0]}
                 error={errors.reservation_date?.message}
@@ -247,7 +284,7 @@ export function BookTable() {
               />
 
               <Input
-                label="Party Size (Number of Guests)"
+                label={t.reservations.partySizeLabel}
                 type="number"
                 min={1}
                 max={20}
@@ -258,14 +295,14 @@ export function BookTable() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Start Time"
+                label={t.reservations.startTimeLabel}
                 type="time"
                 error={errors.start_time?.message}
                 {...register('start_time')}
               />
 
               <Input
-                label="End Time"
+                label={t.reservations.endTimeLabel}
                 type="time"
                 error={errors.end_time?.message}
                 {...register('end_time')}
@@ -273,34 +310,34 @@ export function BookTable() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Special Requests / Halal Dining Preferences (Optional)
+              <label className="block text-xs font-semibold text-stone-300 uppercase tracking-wider">
+                {t.reservations.notesLabel}
               </label>
               <textarea
                 rows={3}
-                placeholder="Anniversary celebration, baby high-chair needed, prayer space inquiry, quiet corner preference..."
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500/80 focus:ring-2 focus:ring-amber-500/30 transition"
+                placeholder={t.reservations.notesPlaceholder}
+                className="w-full px-4 py-2.5 rounded-xl bg-midnight border border-champagne/20 text-ivory placeholder-stone-500 text-sm focus:outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/30 transition"
                 {...register('special_requests')}
               />
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 space-y-1.5 font-light">
-              <div className="flex items-center space-x-2 text-emerald-400 font-semibold">
+            <div className="p-4 rounded-xl bg-midnight border border-champagne/20 text-xs text-stone-300 space-y-1.5 font-light">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-champagne font-semibold">
                 <ShieldCheck className="w-4 h-4" />
-                <span>SavoryByte Dining Guarantee</span>
+                <span>{t.common.halalCertified} • {t.common.alcoholFreePorkFree}</span>
               </div>
               <p>
-                Your table is reserved exclusively for your selected time slot with automated collision checks. Cancellation is available free of charge through your Customer Portal.
+                {t.home.heroSubtitle}
               </p>
             </div>
 
             <Button
               type="submit"
               variant="primary"
-              className="w-full font-bold py-3.5 text-base shadow-xl shadow-amber-500/20"
+              className="w-full font-semibold py-3.5 text-base shadow-xl shadow-saffron/20"
               loading={isSubmitting}
             >
-              Confirm & Lock Reservation
+              {t.reservations.confirmBtn}
             </Button>
           </CardContent>
         </Card>

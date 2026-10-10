@@ -23,18 +23,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
+      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-saffron/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
 
     const variants = {
       primary:
-        'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold shadow-lg shadow-amber-500/20',
+        'bg-saffron hover:bg-saffron-600 text-white font-semibold shadow-lg shadow-saffron-950/40 border border-saffron-400/30 active:translate-y-px',
       secondary:
-        'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700',
+        'bg-[#101B2E] hover:bg-[#162238] text-ivory border border-[#182640] shadow-sm',
       danger:
-        'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20',
+        'bg-terracotta hover:bg-terracotta-light text-white shadow-md shadow-terracotta-950/30 border border-terracotta-400/30',
       outline:
-        'border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400',
-      ghost: 'text-slate-300 hover:bg-slate-800 hover:text-slate-100',
+        'border border-champagne/40 text-champagne-light hover:bg-champagne/10 hover:border-champagne hover:text-champagne-light',
+      ghost: 'text-stone-300 hover:bg-[#101B2E] hover:text-ivory',
     };
 
     const sizes = {

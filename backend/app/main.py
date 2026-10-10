@@ -6,8 +6,10 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.menu import router as menu_router
 from app.api.v1.orders import router as orders_router
 from app.api.v1.reservations import router as reservations_router
+from app.api.v1.security import router as security_router
 from app.api.v1.tables import router as tables_router
 from app.core.config import settings
+from app.core.security_headers import SecurityHeadersMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -15,6 +17,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# AppSec Defensive Security Headers & Request Correlation ID Middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Configure CORS middleware
 if settings.CORS_ORIGINS:
@@ -33,6 +38,7 @@ app.include_router(reservations_router, prefix=settings.API_V1_STR)
 app.include_router(menu_router, prefix=settings.API_V1_STR)
 app.include_router(orders_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
+app.include_router(security_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])

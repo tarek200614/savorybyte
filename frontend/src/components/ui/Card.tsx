@@ -8,7 +8,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
       ref={ref}
       className={twMerge(
         clsx(
-          'rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-sm overflow-hidden transition-all duration-200 hover:border-slate-700/80',
+          'rounded-2xl bg-charcoal/90 border border-champagne/15 shadow-xl backdrop-blur-sm overflow-hidden transition-all duration-200 hover:border-champagne/30',
           className
         )
       )}

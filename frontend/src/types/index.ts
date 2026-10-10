@@ -82,6 +82,15 @@ export interface MenuItem {
   category?: Category;
 }
 
+export interface MenuItemChangeLog {
+  id: string;
+  timestamp: string;
+  actor_email?: string | null;
+  actor_name?: string | null;
+  details: string;
+  request_id?: string | null;
+}
+
 export type OrderStatus =
   | 'PENDING'
   | 'PREPARING'
@@ -111,6 +120,7 @@ export interface Order {
   notes?: string | null;
   created_at: string;
   items: OrderItem[];
+  table?: RestaurantTable | null;
 }
 
 export interface DashboardSummary {
